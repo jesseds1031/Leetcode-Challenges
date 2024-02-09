@@ -1,0 +1,126 @@
+class Solution {
+public:
+    void markIsland(vector<vector<int>>& grid) \
+    {
+        
+        bool isFirstIslandMarked = false;
+        // search all unvisited cells
+        for (int i = 0; i < grid.size(); i++)
+        {
+            for (int j = 0; j < grid[i].size(); j++)
+            {
+                if (grid[i][j] != 2 && grid[i][j] != 0)
+                { 
+                    // do dfs
+                    dfs(make_pair(i, j), grid);
+                    isFirstIslandMarked = true;
+                    break;
+                }
+            }
+            
+            if (isFirstIslandMarked)
+            {
+                return;
+            }
+        }
+            
+    }
+    
+    // dfs search to mark and count islands
+    void dfs(pair<int,int> coords, vector<vector<int>>& grid)
+    {
+        
+        // save current coordinates
+        int i = coords.first;
+        int j = coords.second;
+        
+        
+        // continue only if coordinates are valid
+        if (i >= 0 &&  i < grid.size() && j >= 0 && j < grid[i].size())
+        {
+            // only continue if not already seen and is an island
+            if (grid[i][j] == 1)
+            {
+                // mark as visited
+                grid[i][j] = 2;
+            
+                // dfs in all directions
+                dfs(make_pair(i, j + 1), grid);
+                dfs(make_pair(i + 1, j), grid);
+                dfs(make_pair(i - 1, j), grid);
+                dfs(make_pair(i, j - 1), grid);            
+            }
+        }
+    }
+    
+    int bfs(vector<vector<int>>& grid)
+    {
+        // track num of iterations needed over water
+        int numBridges = 0;
+        
+        // make and fill queue for bfs with grid's first island
+        queue <pair<int, int>> q;
+        // for holding new added island nodes
+        queue <pair<int, int>> temp;
+        
+        for (int i = 0; i < grid.size(); i++)
+        {
+            for (int j = 0; j < grid[i].size(); j++)
+            {
+                if(grid[i][j] == 2)
+                {
+                    q.push(make_pair(i, j));
+                }
+            }
+        }
+        // direction vector
+        vector<int> directions = {0, 1, 0, -1, 0};
+        
+        while(!q.empty())
+        {
+            ++numBridges;
+            //now do bfs in all possible directions
+            while(!q.empty())
+            {
+                auto x = q.front().first;
+                auto y = q.front().second;
+                
+                // remove from queue
+                q.pop();
+
+                // four directions
+                for (int i = 0; i < 4; i++)
+                {
+                    int newX = x + directions[i] , newY = y + directions[i+1];
+                    if(newX >= 0 && newY >= 0 && newX < grid.size() && newY < grid.size() 
+                      && grid[newX][newY]!=2) 
+                    {
+                        // This means we found the island
+                        if(grid[newX][newY] == 1) 
+                        {
+                            return numBridges-1;
+                        }
+                       temp.push({newX, newY});
+                       grid[newX][newY] = 2;
+                }
+                    }
+                    
+            }
+            // change queue to the other nodes it needs to traverse
+            swap(q, temp);
+            
+        }
+        
+        // if valid input, this should never be reached
+        return -1;
+    }
+    
+    
+    int shortestBridge(vector<vector<int>>& grid) {
+        // mark first island
+        markIsland(grid);
+        
+        // do bfs and count number of iterations
+        return bfs(grid);
+    }
+};
